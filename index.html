@@ -56,6 +56,12 @@
     .history-table { min-width: 520px; }
     .edit-select { min-width: 130px; padding: 6px; border: 1px solid #b8c4d1; border-radius: 5px; font: inherit; }
     .muted-note { color: var(--muted); font-size: 13px; }
+    .discourse-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+    .discourse-grid textarea, .discourse-grid input[type="text"] { width: 100%; padding: 10px; border: 1px solid #b8c4d1; border-radius: 6px; font: inherit; color: inherit; resize: vertical; }
+    .discourse-grid textarea { min-height: 76px; }
+    .discourse-full { grid-column: 1 / -1; }
+    .char-counter { color: var(--muted); font-size: 12px; text-align: right; }
+    @media (max-width: 700px) { .discourse-grid { grid-template-columns: 1fr; } .discourse-full { grid-column: auto; } }
     @media (max-width: 700px) { .member-form, .history-controls { grid-template-columns: 1fr 1fr; } .member-form input[type="text"], .member-form button { grid-column: 1 / -1; } }
     @media (max-width: 560px) { body { padding: 10px; } .card { padding: 12px; } button { min-width: 100%; } }
     @media print { body { max-width: none; background: #fff; } .controls-card, .status, .summary, header p { display: none !important; } header { color: #000; background: #fff; padding: 0; } .card { border: 0; box-shadow: none; } }
@@ -109,6 +115,22 @@
           <thead><tr><th scope="col">Semana</th><th scope="col">Data</th><th scope="col">Dirigente</th><th scope="col">Presidente</th><th scope="col">Discurso</th><th scope="col">Leitor</th></tr></thead>
           <tbody id="tabelaCorpo"><tr><td colspan="6" class="empty-state">A escala será exibida aqui.</td></tr></tbody>
         </table>
+      </div>
+    </section>
+    <section class="card" aria-labelledby="discurso-title">
+      <h2 id="discurso-title">Informações do discurso</h2>
+      <p class="muted-note">Esses dados ficam salvos offline neste dispositivo junto com a configuração da escala.</p>
+      <div class="discourse-grid">
+        <div class="field-group discourse-full"><label for="enderecoCidade">Endereço — cidade</label><input id="enderecoCidade" type="text" maxlength="120" placeholder="Nome da cidade"><span class="char-counter" data-counter-for="enderecoCidade">0/120</span></div>
+        <div class="field-group"><label for="enderecoBairro">Endereço — bairro</label><input id="enderecoBairro" type="text" maxlength="120" placeholder="Nome do bairro"><span class="char-counter" data-counter-for="enderecoBairro">0/120</span></div>
+        <div class="field-group"><label for="enderecoLogradouro">Endereço — rua, estrada ou avenida</label><input id="enderecoLogradouro" type="text" maxlength="120" placeholder="Ex.: Avenida Central, 100"><span class="char-counter" data-counter-for="enderecoLogradouro">0/120</span></div>
+        <div class="field-group"><label for="nomeCongregacao">Nome da congregação</label><input id="nomeCongregacao" type="text" maxlength="120"><span class="char-counter" data-counter-for="nomeCongregacao">0/120</span></div>
+        <div class="field-group"><label for="temaDiscurso">Tema do discurso</label><input id="temaDiscurso" type="text" maxlength="120"><span class="char-counter" data-counter-for="temaDiscurso">0/120</span></div>
+        <div class="field-group"><label for="cantico">Cântico</label><input id="cantico" type="text" maxlength="120"><span class="char-counter" data-counter-for="cantico">0/120</span></div>
+        <div class="field-group"><label for="dataDiscurso">Data</label><input id="dataDiscurso" type="text" maxlength="120" placeholder="Ex.: domingo, 13/09/2026"><span class="char-counter" data-counter-for="dataDiscurso">0/120</span></div>
+        <div class="field-group"><label for="horarioDiscurso">Horário</label><input id="horarioDiscurso" type="text" maxlength="120" placeholder="Ex.: 19h30"><span class="char-counter" data-counter-for="horarioDiscurso">0/120</span></div>
+        <div class="field-group discourse-full"><label for="observacoesDiscurso">Observações</label><textarea id="observacoesDiscurso" maxlength="180"></textarea><span class="char-counter" data-counter-for="observacoesDiscurso">0/180</span></div>
+        <div class="field-group discourse-full"><label for="urgenciasDiscurso">Urgências e eventualidades</label><textarea id="urgenciasDiscurso" maxlength="180" placeholder="Registre mudanças, avisos ou eventualidades."></textarea><span class="char-counter" data-counter-for="urgenciasDiscurso">0/180</span></div>
       </div>
     </section>
     <section class="card" aria-labelledby="member-title">

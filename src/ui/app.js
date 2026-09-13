@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const inputSemanas = $('qtdSemanas'); const inputDataInicio = $('dataInicio'); const selectDestaque = $('membroDestaque');
   const containerAusencias = $('containerAusencias'); const tabelaCorpo = $('tabelaCorpo'); const status = $('status'); const resumo = $('resumo'); const contadorAusentes = $('contadorAusentes');
   const formMembro = $('formMembro'); const historicoMembro1 = $('historicoMembro1'); const historicoMembro2 = $('historicoMembro2'); const historicoConteudo = $('historicoConteudo');
+  const camposDiscurso = ['enderecoCidade', 'enderecoBairro', 'enderecoLogradouro', 'nomeCongregacao', 'temaDiscurso', 'cantico', 'dataDiscurso', 'horarioDiscurso', 'observacoesDiscurso', 'urgenciasDiscurso'];
   let membros = [];
   let escalaAtual = [];
 
@@ -54,6 +55,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!Number.isInteger(semanas) || semanas < 1 || semanas > 52) { $('semanasErro').textContent = 'Use um número inteiro entre 1 e 52.'; valido = false; }
     return valido;
   }
+
+  function obterDadosDiscurso() { return Object.fromEntries(camposDiscurso.map(id => [id, $(id).value.trim()])); }
+  function atualizarContador(campo) { const counter = document.querySelector(`[data-counter-for="${campo.id}"]`); if (counter) counter.textContent = `${campo.value.length}/${campo.maxLength}`; }
+  function preencherDadosDiscurso(dados = {}) { camposDiscurso.forEach(id => { $(id).value = dados[id] || ''; atualizarContador($(id)); }); }
 
   function opcoesParaPapel(papel, atual) {
     const nomes = papel === 'dirigente' ? [DIRIGENTE_FIXO] : obterNomes(papel);
@@ -116,13 +121,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   selectDestaque.addEventListener('change', () => { if (escalaAtual.length) renderizarTabela(escalaAtual); });
   [historicoMembro1, historicoMembro2].forEach(select => select.addEventListener('change', () => atualizarHistorico().catch(() => mostrarStatus('Não foi possível carregar o histórico.', 'error'))));
   formMembro.addEventListener('submit', async event => { event.preventDefault(); const nome = $('nomeMembro').value; const papeis = [...formMembro.querySelectorAll('input[data-papel]:checked')].map(input => input.value); try { await adicionarMembro(nome, papeis); membros = await listarMembros(); formMembro.reset(); inicializarControles(); mostrarStatus(`${nome.trim()} foi adicionado e já pode ser escalado.`); } catch (err) { mostrarStatus(err.message || 'Não foi possível adicionar o membro.', 'error'); } });
-  btnSalvar.addEventListener('click', async () => { if (!escalaAtual.length) { mostrarStatus('Gere uma escala antes de salvar.', 'error'); return; } try { await salvarEscalaBanco(escalaAtual, inputDataInicio.value, obterAusentesSelecionados()); await atualizarHistorico(); mostrarStatus('Escala e designações salvas neste dispositivo.'); } catch { mostrarStatus('Não foi possível salvar a escala neste dispositivo.', 'error'); } });
+  btnSalvar.addEventListener('click', async () => { if (!escalaAtual.length) { mostrarStatus('Gere uma escala antes de salvar.', 'error'); return; } try { await salvarEscalaBanco(escalaAtual, inputDataInicio.value, obterAusentesSelecionados(), obterDadosDiscurso()); await atualizarHistorico(); mostrarStatus('Escala, discurso e designações salvos neste dispositivo.'); } catch { mostrarStatus('Não foi possível salvar os dados neste dispositivo.', 'error'); } });
+  camposDiscurso.forEach(id => $(id).addEventListener('input', event => atualizarContador(event.target)));
 
   try {
     membros = await listarMembros(); inicializarControles(); inputDataInicio.value = new Date().toISOString().split('T')[0];
     const estadoSalvo = await obterUltimoEstado(); if (estadoSalvo.dataInicio) inputDataInicio.value = estadoSalvo.dataInicio;
     (estadoSalvo.ausentes || []).forEach(membro => { const cb = [...containerAusencias.querySelectorAll('input')].find(input => input.value === membro); if (cb) cb.checked = true; }); atualizarContadorAusentes();
-    if (estadoSalvo.escala?.length) renderizarTabela(estadoSalvo.escala); else executarGeracao(); await atualizarHistorico();
+    preencherDadosDiscurso(estadoSalvo.discurso); if (estadoSalvo.escala?.length) renderizarTabela(estadoSalvo.escala); else executarGeracao(); await atualizarHistorico();
   } catch { membros = []; inicializarControles(); executarGeracao(); }
   if (window.lucide) window.lucide.createIcons();
 });

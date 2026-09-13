@@ -52,3 +52,7 @@ A versão atual usa o IndexedDB v2 com as coleções `membros`, `escalas`, `conf
 
 Escalas gravadas em versões anteriores são migradas automaticamente para o histórico individual na primeira abertura da nova versão. Os dados permanecem locais ao navegador e ao dispositivo.
 
+
+## Informações do discurso
+
+A área de informações do discurso salva no IndexedDB local os campos de cidade, bairro, rua/estrada/avenida, congregação, tema, cântico, data, horário, observações e urgências/eventualidades. Os campos de texto têm limite de 120 caracteres, enquanto observações e urgências têm limite de 180 caracteres. O usuário deve usar “Salvar neste dispositivo” para persistir a escala e os dados preenchidos.

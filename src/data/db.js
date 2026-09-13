@@ -83,7 +83,7 @@ export async function adicionarMembro(nome, papeis) {
   });
 }
 
-export async function salvarEscalaBanco(escala, dataInicio, ausentes) {
+export async function salvarEscalaBanco(escala, dataInicio, ausentes, discurso = {}) {
   const db = await abrirBanco();
   return new Promise((resolve, reject) => {
     const tx = transacao(db, ['escalas', 'config', 'designacoes'], 'readwrite');
@@ -101,6 +101,7 @@ export async function salvarEscalaBanco(escala, dataInicio, ausentes) {
     config.put({ chave: 'ultimaEscala', valor: escala });
     config.put({ chave: 'ultimasAusencias', valor: ausentes });
     config.put({ chave: 'ultimaDataInicio', valor: dataInicio });
+    config.put({ chave: 'dadosDiscurso', valor: discurso });
     tx.oncomplete = () => resolve(escalaRequest.result);
     tx.onerror = () => reject(tx.error);
   });
@@ -121,8 +122,9 @@ export async function obterUltimoEstado() {
   return new Promise((resolve, reject) => {
     const store = transacao(db, ['config']).objectStore('config');
     const reqEscala = store.get('ultimaEscala'); const reqAusentes = store.get('ultimasAusencias'); const reqData = store.get('ultimaDataInicio');
-    Promise.all([new Promise(r => { reqEscala.onsuccess = r; }), new Promise(r => { reqAusentes.onsuccess = r; }), new Promise(r => { reqData.onsuccess = r; })]).then(() => resolve({
-      escala: reqEscala.result?.valor || null, ausentes: reqAusentes.result?.valor || [], dataInicio: reqData.result?.valor || ''
+    const reqDiscurso = store.get('dadosDiscurso');
+    Promise.all([new Promise(r => { reqEscala.onsuccess = r; }), new Promise(r => { reqAusentes.onsuccess = r; }), new Promise(r => { reqData.onsuccess = r; }), new Promise(r => { reqDiscurso.onsuccess = r; })]).then(() => resolve({
+      escala: reqEscala.result?.valor || null, ausentes: reqAusentes.result?.valor || [], dataInicio: reqData.result?.valor || '', discurso: reqDiscurso.result?.valor || {}
     })).catch(reject);
   });
 }
