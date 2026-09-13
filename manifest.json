@@ -1,0 +1,16 @@
+{
+  "short_name": "EscalaReuniao",
+  "name": "Gerador de Escala de Reuniões",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3652/3652191.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#ffffff",
+  "theme_color": "#2b5278",
+  "display": "standalone",
+  "orientation": "portrait"
+}
