@@ -48,6 +48,15 @@
     .membro-tag { display: inline-block; padding: 3px 7px; border-radius: 4px; background: #e0f2fe; }
     tr.destaque-membro .membro-tag { background: #fde68a; font-weight: 700; }
     .empty-state { text-align: center; color: var(--muted); }
+    .member-form, .history-controls { display: grid; grid-template-columns: 2fr repeat(4, auto) auto; gap: 8px; align-items: center; }
+    .member-form input[type="text"] { padding: 10px; border: 1px solid #b8c4d1; border-radius: 6px; font: inherit; }
+    .member-form, .history-controls { margin-top: 12px; }
+    .role-option { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; white-space: nowrap; }
+    .history-list { margin-top: 12px; overflow-x: auto; }
+    .history-table { min-width: 520px; }
+    .edit-select { min-width: 130px; padding: 6px; border: 1px solid #b8c4d1; border-radius: 5px; font: inherit; }
+    .muted-note { color: var(--muted); font-size: 13px; }
+    @media (max-width: 700px) { .member-form, .history-controls { grid-template-columns: 1fr 1fr; } .member-form input[type="text"], .member-form button { grid-column: 1 / -1; } }
     @media (max-width: 560px) { body { padding: 10px; } .card { padding: 12px; } button { min-width: 100%; } }
     @media print { body { max-width: none; background: #fff; } .controls-card, .status, .summary, header p { display: none !important; } header { color: #000; background: #fff; padding: 0; } .card { border: 0; box-shadow: none; } }
   </style>
@@ -101,6 +110,26 @@
           <tbody id="tabelaCorpo"><tr><td colspan="6" class="empty-state">A escala será exibida aqui.</td></tr></tbody>
         </table>
       </div>
+    </section>
+    <section class="card" aria-labelledby="member-title">
+      <h2 id="member-title">Adicionar membro</h2>
+      <p class="muted-note">O novo membro fica salvo somente neste dispositivo e poderá ser usado nas próximas escalas.</p>
+      <form id="formMembro" class="member-form">
+        <input id="nomeMembro" type="text" placeholder="Nome do membro" aria-label="Nome do membro" required>
+        <label class="role-option"><input type="checkbox" data-papel value="presidente"> Presidente</label>
+        <label class="role-option"><input type="checkbox" data-papel value="discurso"> Discurso</label>
+        <label class="role-option"><input type="checkbox" data-papel value="leitor"> Leitor</label>
+        <button type="submit">Adicionar membro</button>
+      </form>
+    </section>
+    <section class="card" aria-labelledby="historico-title">
+      <h2 id="historico-title">Histórico de designações</h2>
+      <p class="muted-note">As designações salvas ficam disponíveis offline neste dispositivo. Para registrar uma escala, use “Salvar neste dispositivo”.</p>
+      <div class="history-controls">
+        <label for="historicoMembro1">Participante 1</label><select id="historicoMembro1"></select>
+        <label for="historicoMembro2">Participante 2</label><select id="historicoMembro2"></select>
+      </div>
+      <div id="historicoConteudo" class="history-list"><p class="empty-state">Selecione um participante para ver o histórico.</p></div>
     </section>
   </main>
   <script src="vendor/lucide.js"></script>

@@ -30,6 +30,7 @@ export function gerarEscalaSemanal({
   totalSemanas,
   dataInicioStr,
   ausentes = [],
+  membros = null,
   historicoPres = [],
   historicoDisc = [],
   historicoLeit = []
@@ -41,6 +42,10 @@ export function gerarEscalaSemanal({
     throw new Error('Informe uma data de início válida.');
   }
 
+  const dirigenteFixo = membros?.dirigente || DIRIGENTE_FIXO;
+  const elegiveisPresidente = membros?.presidente || ELEGIVEIS_PRESIDENTE;
+  const elegiveisDiscurso = membros?.discurso || ELEGIVEIS_DISCURSO;
+  const elegiveisLeitor = membros?.leitor || ELEGIVEIS_LEITOR;
   const escala = [];
   const filaPresidente = [...historicoPres];
   const filaDiscurso = [...historicoDisc];
@@ -50,7 +55,7 @@ export function gerarEscalaSemanal({
 
   for (let semana = 1; semana <= totalSemanas; semana++) {
     const dataFormatada = dataAtual.toLocaleDateString('pt-BR');
-    const dirigente = DIRIGENTE_FIXO;
+    const dirigente = dirigenteFixo;
 
     if (ausentesSet.has(dirigente)) {
       throw new EscalaInviavelError({
@@ -61,14 +66,14 @@ export function gerarEscalaSemanal({
 
     const presidente = escolherOuFalhar({
       papel: 'Presidente', semana, data: dataFormatada,
-      candidatos: ELEGIVEIS_PRESIDENTE.filter(n => !ausentesSet.has(n)),
+      candidatos: elegiveisPresidente.filter(n => !ausentesSet.has(n)),
       historico: filaPresidente
     });
     filaPresidente.push(presidente);
 
     const orador = escolherOuFalhar({
       papel: 'Orador do discurso', semana, data: dataFormatada,
-      candidatos: ELEGIVEIS_DISCURSO.filter(n =>
+      candidatos: elegiveisDiscurso.filter(n =>
         n !== dirigente && n !== presidente && !ausentesSet.has(n)
       ),
       historico: filaDiscurso
@@ -77,7 +82,7 @@ export function gerarEscalaSemanal({
 
     const leitor = escolherOuFalhar({
       papel: 'Leitor de A Sentinela', semana, data: dataFormatada,
-      candidatos: ELEGIVEIS_LEITOR.filter(n =>
+      candidatos: elegiveisLeitor.filter(n =>
         n !== dirigente && n !== presidente && n !== orador && !ausentesSet.has(n)
       ),
       historico: filaLeitor

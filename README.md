@@ -46,3 +46,9 @@ npx http-server -p 4173
 ```
 
 Depois, abra `http://127.0.0.1:4173/`.
+## Histórico e cadastro offline
+
+A versão atual usa o IndexedDB v2 com as coleções `membros`, `escalas`, `config` e `designacoes`. O usuário pode cadastrar novos membros e escolher os papéis elegíveis. Cada célula de participante da escala pode ser alterada antes do salvamento. Ao salvar, o app registra as quatro designações de cada semana e permite consultar até dois participantes no painel de histórico.
+
+Escalas gravadas em versões anteriores são migradas automaticamente para o histórico individual na primeira abertura da nova versão. Os dados permanecem locais ao navegador e ao dispositivo.
+
