@@ -61,6 +61,13 @@
     .discourse-grid textarea { min-height: 76px; }
     .discourse-full { grid-column: 1 / -1; }
     .char-counter { color: var(--muted); font-size: 12px; text-align: right; }
+    .composer-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .composer-actions button { flex: 0 1 auto; min-width: 180px; }
+    .discourse-composer-list { display: grid; gap: 10px; margin-top: 14px; }
+    .discourse-assignment { border: 1px solid var(--border); border-left: 4px solid #0f766e; border-radius: 8px; padding: 12px; background: #f8fafc; }
+    .discourse-assignment h3 { font-size: 15px; margin-bottom: 4px; }
+    .discourse-assignment p { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+    .discourse-assignment .btn-group { margin-top: 0; }
     @media (max-width: 700px) { .discourse-grid { grid-template-columns: 1fr; } .discourse-full { grid-column: auto; } }
     @media (max-width: 700px) { .member-form, .history-controls { grid-template-columns: 1fr 1fr; } .member-form input[type="text"], .member-form button { grid-column: 1 / -1; } }
     @media (max-width: 560px) { body { padding: 10px; } .card { padding: 12px; } button { min-width: 100%; } }
@@ -132,6 +139,15 @@
         <div class="field-group discourse-full"><label for="observacoesDiscurso">Observações</label><textarea id="observacoesDiscurso" maxlength="180"></textarea><span class="char-counter" data-counter-for="observacoesDiscurso">0/180</span></div>
         <div class="field-group discourse-full"><label for="urgenciasDiscurso">Urgências e eventualidades</label><textarea id="urgenciasDiscurso" maxlength="180" placeholder="Registre mudanças, avisos ou eventualidades."></textarea><span class="char-counter" data-counter-for="urgenciasDiscurso">0/180</span></div>
       </div>
+    </section>
+    <section class="card" aria-labelledby="compositor-title">
+      <h2 id="compositor-title"><i data-lucide="file-pen-line" aria-hidden="true"></i> Compositor de discursos</h2>
+      <p class="muted-note">Crie um PDF exclusivo para cada designação de discurso ou um único PDF com as 4 ou 5 semanas da escala.</p>
+      <div class="composer-actions">
+        <button id="btnPdfDiscursos" type="button" class="btn-terciario" disabled><i data-lucide="files" aria-hidden="true"></i>Baixar PDFs separados</button>
+        <button id="btnCompartilharDiscursos" type="button" class="btn-secundario" disabled><i data-lucide="send" aria-hidden="true"></i>Enviar uma designação</button>
+      </div>
+      <div id="compositorDiscursos" class="discourse-composer-list"><p class="empty-state">Gere uma escala para montar as designações.</p></div>
     </section>
     <section class="card" aria-labelledby="member-title">
       <h2 id="member-title">Adicionar membro</h2>

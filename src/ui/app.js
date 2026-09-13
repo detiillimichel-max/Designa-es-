@@ -8,9 +8,9 @@ const escapeHtml = value => String(value).replace(/[&<>'"]/g, char => ({ '&': '&
 
 document.addEventListener('DOMContentLoaded', async () => {
   const $ = id => document.getElementById(id);
-  const btnGerar = $('btnGerar'); const btnSalvar = $('btnSalvar'); const btnPdf = $('btnPdf'); const btnCompartilhar = $('btnCompartilhar');
+  const btnGerar = $('btnGerar'); const btnSalvar = $('btnSalvar'); const btnPdf = $('btnPdf'); const btnCompartilhar = $('btnCompartilhar'); const btnPdfDiscursos = $('btnPdfDiscursos'); const btnCompartilharDiscursos = $('btnCompartilharDiscursos');
   const inputSemanas = $('qtdSemanas'); const inputDataInicio = $('dataInicio'); const selectDestaque = $('membroDestaque');
-  const containerAusencias = $('containerAusencias'); const tabelaCorpo = $('tabelaCorpo'); const status = $('status'); const resumo = $('resumo'); const contadorAusentes = $('contadorAusentes');
+  const containerAusencias = $('containerAusencias'); const tabelaCorpo = $('tabelaCorpo'); const status = $('status'); const resumo = $('resumo'); const contadorAusentes = $('contadorAusentes'); const compositorDiscursos = $('compositorDiscursos');
   const formMembro = $('formMembro'); const historicoMembro1 = $('historicoMembro1'); const historicoMembro2 = $('historicoMembro2'); const historicoConteudo = $('historicoConteudo');
   const camposDiscurso = ['enderecoCidade', 'enderecoBairro', 'enderecoLogradouro', 'nomeCongregacao', 'temaDiscurso', 'cantico', 'dataDiscurso', 'horarioDiscurso', 'observacoesDiscurso', 'urgenciasDiscurso'];
   let membros = [];
@@ -60,6 +60,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   function atualizarContador(campo) { const counter = document.querySelector(`[data-counter-for="${campo.id}"]`); if (counter) counter.textContent = `${campo.value.length}/${campo.maxLength}`; }
   function preencherDadosDiscurso(dados = {}) { camposDiscurso.forEach(id => { $(id).value = dados[id] || ''; atualizarContador($(id)); }); }
 
+  function dadosDiscursoFormatados() {
+    const d = obterDadosDiscurso();
+    return [`${d.enderecoLogradouro}${d.enderecoBairro ? `, ${d.enderecoBairro}` : ''}${d.enderecoCidade ? ` — ${d.enderecoCidade}` : ''}`, d.nomeCongregacao, d.temaDiscurso, d.cantico, d.dataDiscurso, d.horarioDiscurso, d.observacoesDiscurso, d.urgenciasDiscurso];
+  }
+
   function opcoesParaPapel(papel, atual) {
     const nomes = papel === 'dirigente' ? [DIRIGENTE_FIXO] : obterNomes(papel);
     return nomes.map(nome => `<option value="${escapeHtml(nome)}" ${nome === atual ? 'selected' : ''}>${escapeHtml(nome)}</option>`).join('');
@@ -78,7 +83,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       tabelaCorpo.appendChild(tr);
     });
     resumo.textContent = `${dados.length} semana${dados.length === 1 ? '' : 's'} gerada${dados.length === 1 ? '' : 's'} • ${obterAusentesSelecionados().length} ausente${obterAusentesSelecionados().length === 1 ? '' : 's'} • use os campos da tabela para alterar participantes`;
-    btnPdf.disabled = false; btnCompartilhar.disabled = false;
+    btnPdf.disabled = false; btnCompartilhar.disabled = false; btnPdfDiscursos.disabled = false; btnCompartilharDiscursos.disabled = false; renderizarCompositorDiscursos();
+  }
+
+  function renderizarCompositorDiscursos() {
+    if (!escalaAtual.length) { compositorDiscursos.innerHTML = '<p class="empty-state">Gere uma escala para montar as designações.</p>'; return; }
+    compositorDiscursos.innerHTML = escalaAtual.map((item, index) => `<article class="discourse-assignment"><h3>Semana ${item.semana} — ${escapeHtml(item.data)}</h3><p>Discurso: <strong>${escapeHtml(item.orador)}</strong></p><div class="btn-group"><button type="button" class="btn-terciario btnPdfDiscurso" data-index="${index}"><i data-lucide="file-down" aria-hidden="true"></i>Baixar esta designação</button><button type="button" class="btn-secundario btnCompartilharDiscurso" data-index="${index}"><i data-lucide="share-2" aria-hidden="true"></i>Compartilhar esta designação</button></div></article>`).join('');
+    if (window.lucide) window.lucide.createIcons();
   }
 
   function atualizarDesignacao(index, role, value) {
@@ -112,12 +123,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     doc.setFontSize(9); doc.setFillColor(31, 95, 139); doc.setTextColor(255, 255, 255); let x = 14; headers.forEach((header, i) => { doc.rect(x, y - 6, widths[i], 9, 'F'); doc.text(header, x + 2, y); x += widths[i]; }); doc.setTextColor(31, 41, 55);
     rows.forEach((row, rowIndex) => { y += 9; x = 14; if (rowIndex % 2 === 0) { doc.setFillColor(245, 248, 250); doc.rect(14, y - 6, widths.reduce((a, b) => a + b, 0), 9, 'F'); } row.forEach((value, i) => { doc.text(String(value).slice(0, 28), x + 2, y); x += widths[i]; }); }); doc.setFontSize(8); doc.setTextColor(100, 116, 139); doc.text('Gerado pelo app Escala de Reuniões', 14, 195); return doc;
   }
+  function criarPdfDiscurso(index = null) {
+    if (!jsPDF || !escalaAtual.length) throw new Error('Gere uma escala antes de criar o PDF.');
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' }); const itens = index === null ? escalaAtual : [escalaAtual[index]]; const dados = dadosDiscursoFormatados();
+    doc.setFontSize(18); doc.text('Informações do discurso', 14, 18); doc.setFontSize(10); doc.setTextColor(31, 41, 55); let y = 30;
+    itens.forEach((item, itemIndex) => { if (itemIndex > 0) { doc.addPage(); y = 20; } doc.setFontSize(14); doc.text(`Semana ${item.semana} — ${item.data}`, 14, y); y += 10; doc.setFontSize(12); doc.text(`Discurso: ${item.orador}`, 14, y); y += 12; const labels = ['Endereço', 'Congregação', 'Tema', 'Cântico', 'Data', 'Horário', 'Observações', 'Urgências/eventualidades']; dados.forEach((value, i) => { doc.setFont(undefined, 'bold'); doc.text(`${labels[i]}:`, 14, y); doc.setFont(undefined, 'normal'); const linhas = doc.splitTextToSize(value || '—', 175); doc.text(linhas, 48, y); y += Math.max(8, linhas.length * 5 + 3); }); }); doc.setFontSize(8); doc.setTextColor(100, 116, 139); doc.text('Gerado pelo app Escala de Reuniões', 14, 285); return doc;
+  }
+  function baixarPdfDiscursos(index = null) { try { criarPdfDiscurso(index).save(`discursos-${inputDataInicio.value || 'sem-data'}${index === null ? '' : `-semana-${escalaAtual[index].semana}`}.pdf`); mostrarStatus('PDF de discurso baixado.'); } catch (err) { mostrarStatus(err.message, 'error'); } }
+  async function compartilharPdfDiscurso(index) { try { const doc = criarPdfDiscurso(index); const blob = doc.output('blob'); const nome = `discurso-semana-${escalaAtual[index].semana}.pdf`; const arquivo = new File([blob], nome, { type: 'application/pdf' }); if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [arquivo] }))) { await navigator.share({ title: `Discurso — Semana ${escalaAtual[index].semana}`, files: [arquivo] }); mostrarStatus('PDF da designação compartilhado.'); } else { doc.save(nome); mostrarStatus('Compartilhamento não suportado. O PDF foi baixado.'); } } catch (err) { if (err.name !== 'AbortError') mostrarStatus('Não foi possível compartilhar esta designação.', 'error'); } }
   function baixarPdf() { try { criarPdf().save(`escala-reunioes-${inputDataInicio.value || 'sem-data'}.pdf`); mostrarStatus('PDF baixado com sucesso.'); } catch (err) { mostrarStatus(err.message, 'error'); } }
   async function compartilharPdf() { try { const doc = criarPdf(); const blob = doc.output('blob'); const nome = `escala-reunioes-${inputDataInicio.value || 'sem-data'}.pdf`; const arquivo = new File([blob], nome, { type: 'application/pdf' }); if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [arquivo] }))) { await navigator.share({ title: 'Escala de Reuniões', text: 'Escala de reuniões em PDF', files: [arquivo] }); mostrarStatus('PDF compartilhado.'); } else { doc.save(nome); mostrarStatus('Compartilhamento não suportado neste navegador. O PDF foi baixado.'); } } catch (err) { if (err.name !== 'AbortError') mostrarStatus('Não foi possível compartilhar. Tente baixar o PDF.', 'error'); } }
 
   containerAusencias.addEventListener('change', atualizarContadorAusentes);
   tabelaCorpo.addEventListener('change', event => { const target = event.target.closest('.edit-select'); if (target) atualizarDesignacao(Number(target.dataset.index), target.dataset.role, target.value); });
-  btnGerar.addEventListener('click', executarGeracao); btnPdf.addEventListener('click', baixarPdf); btnCompartilhar.addEventListener('click', compartilharPdf);
+  btnGerar.addEventListener('click', executarGeracao); btnPdf.addEventListener('click', baixarPdf); btnCompartilhar.addEventListener('click', compartilharPdf); btnPdfDiscursos.addEventListener('click', () => baixarPdfDiscursos()); btnCompartilharDiscursos.addEventListener('click', () => { if (escalaAtual.length) compartilharPdfDiscurso(0); });
+  compositorDiscursos.addEventListener('click', event => { const baixar = event.target.closest('.btnPdfDiscurso'); const compartilhar = event.target.closest('.btnCompartilharDiscurso'); if (baixar) baixarPdfDiscursos(Number(baixar.dataset.index)); if (compartilhar) compartilharPdfDiscurso(Number(compartilhar.dataset.index)); });
   selectDestaque.addEventListener('change', () => { if (escalaAtual.length) renderizarTabela(escalaAtual); });
   [historicoMembro1, historicoMembro2].forEach(select => select.addEventListener('change', () => atualizarHistorico().catch(() => mostrarStatus('Não foi possível carregar o histórico.', 'error'))));
   formMembro.addEventListener('submit', async event => { event.preventDefault(); const nome = $('nomeMembro').value; const papeis = [...formMembro.querySelectorAll('input[data-papel]:checked')].map(input => input.value); try { await adicionarMembro(nome, papeis); membros = await listarMembros(); formMembro.reset(); inicializarControles(); mostrarStatus(`${nome.trim()} foi adicionado e já pode ser escalado.`); } catch (err) { mostrarStatus(err.message || 'Não foi possível adicionar o membro.', 'error'); } });
@@ -129,6 +149,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const estadoSalvo = await obterUltimoEstado(); if (estadoSalvo.dataInicio) inputDataInicio.value = estadoSalvo.dataInicio;
     (estadoSalvo.ausentes || []).forEach(membro => { const cb = [...containerAusencias.querySelectorAll('input')].find(input => input.value === membro); if (cb) cb.checked = true; }); atualizarContadorAusentes();
     preencherDadosDiscurso(estadoSalvo.discurso); if (estadoSalvo.escala?.length) renderizarTabela(estadoSalvo.escala); else executarGeracao(); await atualizarHistorico();
-  } catch { membros = []; inicializarControles(); executarGeracao(); }
+    catch { escalaAtual = []; inicializarControles(); executarGeracao(); }
   if (window.lucide) window.lucide.createIcons();
 });
