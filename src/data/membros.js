@@ -1,24 +1,31 @@
-export const DIRIGENTE_FIXO = "Cecílio";
+export const DIRIGENTE_FIXO = "Cecílio Júnior";
+
+export const ELEGIVEIS_PRESIDENTE = [
+  "Akira Shiomi",
+  "Luiz Fernando",
+  "Eldes Guerra",
+  "Paulo Amaral",
+  "Felipe Ramos"
+];
 
 export const ELEGIVEIS_DISCURSO = [
-  "Cristiano",
-  "Rodrigo Soares",
-  "Wellington",
+  "Cristiano Prado",
+  "Cleiton Santos",
   "Rodrigo Ramos",
-  "Cecílio",
-  "Ribamar",
-  "Cleyton",
+  "Rodrigo Soares",
+  "Ribamar Souza",
+  "Cecílio Júnior",
+  "Wellington Oliveira",
   "Felipe Ramos"
 ];
 
 export const ELEGIVEIS_LEITOR = [
-  "Cristiano",
+  "Cleiton Santos",
+  "Cristiano Prado",
   "Rodrigo Soares",
-  "Wellington",
   "Rodrigo Ramos",
-  "Ribamar",
-  "Cleyton",
   "Felipe Ramos",
-  "Davi",
-  "Ivanilson"
+  "Wellington Oliveira",
+  "Davi Arruda",
+  "Ivanilson Rocha"
 ];
