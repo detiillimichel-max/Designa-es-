@@ -1,31 +1,56 @@
 import { DIRIGENTE_FIXO, ELEGIVEIS_DISCURSO, ELEGIVEIS_LEITOR } from '../data/membros.js';
 
-export function gerarEscalaSemanal(totalSemanas) {
+export function gerarEscalaSemanal({ totalSemanas, dataInicioStr, ausentes = [], historicoDiscurso = [], historicoLeitor = [] }) {
   const escala = [];
-  const historicoDiscurso = [];
-  const historicoLeitor = [];
+  const filaDiscurso = [...historicoDiscurso];
+  const filaLeitor = [...historicoLeitor];
+
+  // Configuração da data base inicial
+  let dataAtual = dataInicioStr ? new Date(dataInicioStr + 'T00:00:00') : new Date();
 
   for (let semana = 1; semana <= totalSemanas; semana++) {
+    // Formatação da data da semana (ex: 18/10/2026)
+    const dataFormatada = dataAtual.toLocaleDateString('pt-BR');
+
+    // 1. Dirigente Fixo (Cecílio)
     const dirigente = DIRIGENTE_FIXO;
 
-    // Discurso: Não pode ser quem está dirigindo na mesma semana (Cecílio)
-    const opcoesDiscurso = ELEGIVEIS_DISCURSO.filter(nome => nome !== dirigente);
-    const orador = escolherMenosRecente(opcoesDiscurso, historicoDiscurso);
-    historicoDiscurso.push(orador);
-
-    // Leitor: Não pode ser o Dirigente nem o Orador do discurso da mesma semana
-    const opcoesLeitor = ELEGIVEIS_LEITOR.filter(
-      nome => nome !== dirigente && nome !== orador
+    // 2. Seleção de Discurso (Exclui Dirigente e Ausentes)
+    let candidatosDiscurso = ELEGIVEIS_DISCURSO.filter(
+      nome => nome !== dirigente && !ausentes.includes(nome)
     );
-    const leitor = escolherMenosRecente(opcoesLeitor, historicoLeitor);
-    historicoLeitor.push(leitor);
+
+    // Contingência se todos os oradores estiverem marcados como ausentes
+    if (candidatosDiscurso.length === 0) {
+      candidatosDiscurso = ELEGIVEIS_DISCURSO.filter(nome => nome !== dirigente);
+    }
+
+    const orador = escolherMenosRecente(candidatosDiscurso, filaDiscurso);
+    filaDiscurso.push(orador);
+
+    // 3. Seleção de Leitor (Exclui Dirigente, Orador da semana e Ausentes)
+    let candidatosLeitor = ELEGIVEIS_LEITOR.filter(
+      nome => nome !== dirigente && nome !== orador && !ausentes.includes(nome)
+    );
+
+    // Contingência
+    if (candidatosLeitor.length === 0) {
+      candidatosLeitor = ELEGIVEIS_LEITOR.filter(nome => nome !== dirigente && nome !== orador);
+    }
+
+    const leitor = escolherMenosRecente(candidatosLeitor, filaLeitor);
+    filaLeitor.push(leitor);
 
     escala.push({
       semana,
+      data: dataFormatada,
       dirigente,
       orador,
       leitor
     });
+
+    // Incrementa 7 dias para a próxima semana
+    dataAtual.setDate(dataAtual.getDate() + 7);
   }
 
   return escala;
@@ -40,7 +65,6 @@ function escolherMenosRecente(candidatos, historico) {
       return candidato;
     }
     
-    // Se a quantidade de vezes for igual, prefere o que apareceu há mais tempo no histórico
     if (vezesCandidato === vezesEscolhido) {
       const ultimoIndiceCandidato = historico.lastIndexOf(candidato);
       const ultimoIndiceEscolhido = historico.lastIndexOf(escolhido);
@@ -50,4 +74,3 @@ function escolherMenosRecente(candidatos, historico) {
     return escolhido;
   }, candidatos[0]);
 }
-
