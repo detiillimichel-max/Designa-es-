@@ -1,8 +1,10 @@
-const CACHE_NAME = 'escala-reuniao-v2';
+const CACHE_NAME = 'escala-reuniao-v3';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
   './src/data/membros.js',
   './src/data/db.js',
   './src/logic/geradorEscala.js',
