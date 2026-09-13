@@ -1,10 +1,12 @@
-const CACHE_NAME = 'escala-reuniao-v3';
+const CACHE_NAME = 'escala-reuniao-v4';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
+  './vendor/lucide.js',
+  './vendor/jspdf.umd.min.js',
   './src/data/membros.js',
   './src/data/db.js',
   './src/logic/geradorEscala.js',
@@ -30,9 +32,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    caches.match(event.request).then((cachedResponse) => cachedResponse || fetch(event.request))
   );
 });

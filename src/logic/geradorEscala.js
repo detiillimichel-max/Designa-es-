@@ -1,11 +1,22 @@
-import { 
-  DIRIGENTE_FIXO, 
-  ELEGIVEIS_PRESIDENTE, 
-  ELEGIVEIS_DISCURSO, 
-  ELEGIVEIS_LEITOR 
+import {
+  DIRIGENTE_FIXO,
+  ELEGIVEIS_PRESIDENTE,
+  ELEGIVEIS_DISCURSO,
+  ELEGIVEIS_LEITOR
 } from '../data/membros.js';
 
-// Função para embaralhar opções em caso de empate mantendo aleatoriedade
+export class EscalaInviavelError extends Error {
+  constructor({ semana, data, papel, candidatos, motivo }) {
+    super(`Não foi possível preencher ${papel} na semana ${semana}.`);
+    this.name = 'EscalaInviavelError';
+    this.semana = semana;
+    this.data = data;
+    this.papel = papel;
+    this.candidatos = candidatos;
+    this.motivo = motivo;
+  }
+}
+
 function embaralhar(array) {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -15,89 +26,94 @@ function embaralhar(array) {
   return arr;
 }
 
-export function gerarEscalaSemanal({ 
-  totalSemanas, 
-  dataInicioStr, 
-  ausentes = [], 
-  historicoPres = [], 
-  historicoDisc = [], 
-  historicoLeit = [] 
+export function gerarEscalaSemanal({
+  totalSemanas,
+  dataInicioStr,
+  ausentes = [],
+  historicoPres = [],
+  historicoDisc = [],
+  historicoLeit = []
 }) {
+  if (!Number.isInteger(totalSemanas) || totalSemanas < 1 || totalSemanas > 52) {
+    throw new Error('A quantidade de semanas deve estar entre 1 e 52.');
+  }
+  if (!dataInicioStr || Number.isNaN(new Date(`${dataInicioStr}T00:00:00`).getTime())) {
+    throw new Error('Informe uma data de início válida.');
+  }
+
   const escala = [];
   const filaPresidente = [...historicoPres];
   const filaDiscurso = [...historicoDisc];
   const filaLeitor = [...historicoLeit];
-
-  let dataAtual = dataInicioStr ? new Date(dataInicioStr + 'T00:00:00') : new Date();
+  const ausentesSet = new Set(ausentes);
+  let dataAtual = new Date(`${dataInicioStr}T00:00:00`);
 
   for (let semana = 1; semana <= totalSemanas; semana++) {
     const dataFormatada = dataAtual.toLocaleDateString('pt-BR');
-
-    // 1. Dirigente Fixo
     const dirigente = DIRIGENTE_FIXO;
 
-    // 2. Presidente da Reunião
-    let opsPresidente = ELEGIVEIS_PRESIDENTE.filter(n => !ausentes.includes(n));
-    if (opsPresidente.length === 0) opsPresidente = [...ELEGIVEIS_PRESIDENTE];
-    const presidente = escolherComRodizio(opsPresidente, filaPresidente);
+    if (ausentesSet.has(dirigente)) {
+      throw new EscalaInviavelError({
+        semana, data: dataFormatada, papel: 'Dirigente', candidatos: [dirigente],
+        motivo: 'O dirigente fixo está marcado como ausente.'
+      });
+    }
+
+    const presidente = escolherOuFalhar({
+      papel: 'Presidente', semana, data: dataFormatada,
+      candidatos: ELEGIVEIS_PRESIDENTE.filter(n => !ausentesSet.has(n)),
+      historico: filaPresidente
+    });
     filaPresidente.push(presidente);
 
-    // 3. Orador do Discurso (Exclui Dirigente, Presidente da semana e Ausentes)
-    let opsDiscurso = ELEGIVEIS_DISCURSO.filter(
-      n => n !== dirigente && n !== presidente && !ausentes.includes(n)
-    );
-    if (opsDiscurso.length === 0) {
-      opsDiscurso = ELEGIVEIS_DISCURSO.filter(n => n !== dirigente && n !== presidente);
-    }
-    const orador = escolherComRodizio(opsDiscurso, filaDiscurso);
+    const orador = escolherOuFalhar({
+      papel: 'Orador do discurso', semana, data: dataFormatada,
+      candidatos: ELEGIVEIS_DISCURSO.filter(n =>
+        n !== dirigente && n !== presidente && !ausentesSet.has(n)
+      ),
+      historico: filaDiscurso
+    });
     filaDiscurso.push(orador);
 
-    // 4. Leitor de A Sentinela (Exclui Dirigente, Presidente, Orador da semana e Ausentes)
-    let opsLeitor = ELEGIVEIS_LEITOR.filter(
-      n => n !== dirigente && n !== presidente && n !== orador && !ausentes.includes(n)
-    );
-    if (opsLeitor.length === 0) {
-      opsLeitor = ELEGIVEIS_LEITOR.filter(n => n !== dirigente && n !== presidente && n !== orador);
-    }
-    const leitor = escolherComRodizio(opsLeitor, filaLeitor);
+    const leitor = escolherOuFalhar({
+      papel: 'Leitor de A Sentinela', semana, data: dataFormatada,
+      candidatos: ELEGIVEIS_LEITOR.filter(n =>
+        n !== dirigente && n !== presidente && n !== orador && !ausentesSet.has(n)
+      ),
+      historico: filaLeitor
+    });
     filaLeitor.push(leitor);
 
-    escala.push({
-      semana,
-      data: dataFormatada,
-      presidente,
-      orador,
-      dirigente,
-      leitor
-    });
-
+    escala.push({ semana, data: dataFormatada, presidente, orador, dirigente, leitor });
     dataAtual.setDate(dataAtual.getDate() + 7);
   }
 
   return escala;
 }
 
-function escolherComRodizio(candidatos, historico) {
-  // Embaralha a ordem inicial para variar os empates a cada clique
-  const candidatosEmbaralhados = embaralhar(candidatos);
+function escolherOuFalhar({ papel, semana, data, candidatos, historico }) {
+  if (candidatos.length === 0) {
+    throw new EscalaInviavelError({
+      semana, data, papel, candidatos,
+      motivo: 'Não há integrante disponível que atenda às regras atuais.'
+    });
+  }
+  return escolherComRodizio(candidatos, historico);
+}
 
+function escolherComRodizio(candidatos, historico) {
+  const candidatosEmbaralhados = embaralhar(candidatos);
   return candidatosEmbaralhados.reduce((escolhido, candidato) => {
     const vezesCandidato = historico.filter(n => n === candidato).length;
     const vezesEscolhido = historico.filter(n => n === escolhido).length;
-
-    // Prefere quem participou menos vezes
     if (vezesCandidato < vezesEscolhido) return candidato;
-    
-    // Se tiverem a mesma quantidade de participações, prefere quem participou há mais tempo
     if (vezesCandidato === vezesEscolhido) {
-      const uCandidato = historico.lastIndexOf(candidato);
-      const uEscolhido = historico.lastIndexOf(escolhido);
-
-      if (uCandidato !== uEscolhido) {
-        return uCandidato < uEscolhido ? candidato : escolhido;
+      const ultimoCandidato = historico.lastIndexOf(candidato);
+      const ultimoEscolhido = historico.lastIndexOf(escolhido);
+      if (ultimoCandidato !== ultimoEscolhido) {
+        return ultimoCandidato < ultimoEscolhido ? candidato : escolhido;
       }
     }
-
     return escolhido;
   }, candidatosEmbaralhados[0]);
 }

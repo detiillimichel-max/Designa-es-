@@ -3,109 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Escala de Reuniões PWA</title>
+  <meta name="description" content="Gerador offline de escalas para reuniões.">
+  <title>Escala de Reuniões</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2b5278">
+  <meta name="theme-color" content="#1f5f8b">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #f4f6f8; color: #333333; padding: 16px; max-width: 900px; margin: 0 auto; }
-    header { background-color: #2b5278; color: #ffffff; padding: 16px; border-radius: 8px; margin-bottom: 16px; text-align: center; }
-    .card { background: #ffffff; border: 1px solid #e1e4e8; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .grid-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
-    .field-group { display: flex; flex-direction: column; gap: 4px; }
-    label { font-weight: 600; font-size: 14px; }
-    input[type="number"], input[type="date"], select { padding: 8px; border: 1px solid #cccccc; border-radius: 4px; font-size: 14px; }
-    
-    /* Área de Ausências */
-    .ausencias-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 8px; max-height: 120px; overflow-y: auto; padding: 8px; background: #fafbfc; border: 1px solid #e1e4e8; border-radius: 4px; }
-    .ausencia-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
-
-    /* Botões */
-    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-    button { background-color: #2b5278; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; flex: 1; min-width: 140px; }
-    button.btn-secundario { background-color: #57606a; }
-    button:active { opacity: 0.9; }
-
-    /* Tabela */
+    :root { --primary: #1f5f8b; --primary-dark: #174b6e; --secondary: #475569; --bg: #f4f7fa; --border: #d8e0e8; --text: #1f2937; --muted: #64748b; --success: #166534; --error: #991b1b; }
+    * { box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); padding: 16px; max-width: 980px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.45; }
+    header { background: linear-gradient(135deg, var(--primary), #2b5278); color: #fff; padding: 20px 16px; border-radius: 10px; margin-bottom: 16px; }
+    header h1 { font-size: clamp(1.35rem, 4vw, 1.8rem); }
+    header p { margin-top: 4px; opacity: .9; font-size: .95rem; }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(15, 23, 42, .05); }
+    .grid-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px; }
+    .controls-grid-spaced { margin-top: 12px; }
+    .field-group { display: flex; flex-direction: column; gap: 5px; }
+    label, legend, .field-label { font-weight: 650; font-size: 14px; }
+    input[type="number"], input[type="date"], select { width: 100%; padding: 10px; border: 1px solid #b8c4d1; border-radius: 6px; font: inherit; background: #fff; color: inherit; }
+    input:focus-visible, select:focus-visible, button:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .field-help { color: var(--muted); font-size: 12px; }
+    .error-text { color: var(--error); font-size: 13px; min-height: 1.2em; }
+    .ausencias-header { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+    .ausencias-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 8px; margin-top: 8px; max-height: 150px; overflow-y: auto; padding: 10px; background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; }
+    .ausencia-item { display: flex; align-items: center; gap: 7px; font-size: 13px; }
+    .ausencia-item input { width: 16px; height: 16px; accent-color: var(--primary); }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+    .result-actions { margin-top: 0; margin-bottom: 10px; }
+    button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: var(--primary); color: #fff; border: 0; padding: 10px 14px; border-radius: 6px; font: inherit; font-weight: 700; cursor: pointer; flex: 1; min-width: 150px; }
+    button:hover { background: var(--primary-dark); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    button.btn-secundario { background: var(--secondary); }
+    button.btn-terciario { background: #0f766e; }
+    .status { margin-top: 12px; padding: 10px 12px; border-radius: 6px; font-size: 14px; }
+    .status[hidden] { display: none; }
+    .status.success { color: var(--success); background: #dcfce7; border: 1px solid #86efac; }
+    .status.error { color: var(--error); background: #fee2e2; border: 1px solid #fca5a5; }
+    .summary { color: var(--muted); font-size: 14px; margin: 5px 0 10px; }
     .table-responsive { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    th, td { border: 1px solid #e1e4e8; padding: 10px; text-align: left; font-size: 14px; }
-    th { background-color: #f0f3f6; font-weight: 600; }
-    tr:nth-child(even) { background-color: #fafbfc; }
-    
-    /* Destaque visual do membro selecionado */
-    tr.destaque-membro { background-color: #fff8c5 !important; font-weight: bold; }
-    .membro-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; background: #e1f0ff; }
-    tr.destaque-membro .membro-tag { background: #ffe564; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; min-width: 700px; }
+    th, td { border: 1px solid var(--border); padding: 10px; text-align: left; font-size: 14px; }
+    th { background: #eef3f7; font-weight: 700; }
+    tr:nth-child(even) { background: #f8fafc; }
+    tr.destaque-membro { background: #fff7cc !important; }
+    .membro-tag { display: inline-block; padding: 3px 7px; border-radius: 4px; background: #e0f2fe; }
+    tr.destaque-membro .membro-tag { background: #fde68a; font-weight: 700; }
+    .empty-state { text-align: center; color: var(--muted); }
+    @media (max-width: 560px) { body { padding: 10px; } .card { padding: 12px; } button { min-width: 100%; } }
+    @media print { body { max-width: none; background: #fff; } .controls-card, .status, .summary, header p { display: none !important; } header { color: #000; background: #fff; padding: 0; } .card { border: 0; box-shadow: none; } }
   </style>
 </head>
 <body>
-
   <header>
     <h1>Escala de Reuniões</h1>
+    <p>Gere, salve e compartilhe uma escala semanal com segurança.</p>
   </header>
-
   <main>
-    <!-- Parâmetros de Entrada -->
-    <section class="card">
-      <div class="grid-controls">
+    <section class="card controls-card" aria-labelledby="config-title">
+      <h2 id="config-title">Configurar escala</h2>
+      <div class="grid-controls controls-grid-spaced">
         <div class="field-group">
-          <label for="dataInicio">Data do 1º Domingo/Dia:</label>
-          <input type="date" id="dataInicio">
+          <label for="dataInicio">Data do primeiro dia</label>
+          <input type="date" id="dataInicio" required aria-describedby="dataAjuda dataErro">
+          <span id="dataAjuda" class="field-help">As semanas seguintes serão calculadas a cada 7 dias.</span>
+          <span id="dataErro" class="error-text" role="alert"></span>
         </div>
         <div class="field-group">
-          <label for="qtdSemanas">Qtd. de Semanas:</label>
-          <input type="number" id="qtdSemanas" value="4" min="1" max="52">
+          <label for="qtdSemanas">Quantidade de semanas</label>
+          <input type="number" id="qtdSemanas" value="4" min="1" max="52" step="1" required aria-describedby="semanasErro">
+          <span id="semanasErro" class="error-text" role="alert"></span>
         </div>
         <div class="field-group">
-          <label for="membroDestaque">Destacar Participante:</label>
-          <select id="membroDestaque">
-            <option value="">-- Todos / Nenhum --</option>
-          </select>
+          <label for="membroDestaque">Destacar participante</label>
+          <select id="membroDestaque"><option value="">Todos / nenhum</option></select>
         </div>
       </div>
-
-      <!-- Marcar Ausências -->
       <div class="field-group">
-        <label>Marcar Integrantes Ausentes (não serão sorteados):</label>
-        <div id="containerAusencias" class="ausencias-container">
-          <!-- Carregado via JS -->
-        </div>
+        <div class="ausencias-header"><span class="field-label">Integrantes ausentes</span><span id="contadorAusentes" class="field-help">0 ausentes</span></div>
+        <span class="field-help">Pessoas marcadas não serão sorteadas. O app bloqueará a geração se não houver candidatos.</span>
+        <div id="containerAusencias" class="ausencias-container" role="group" aria-label="Selecionar integrantes ausentes"></div>
       </div>
-
       <div class="btn-group">
-        <button id="btnGerar">Gerar Nova Escala</button>
-        <button id="btnSalvar" class="btn-secundario">Salvar no Banco</button>
+        <button id="btnGerar" type="button"><i data-lucide="refresh-cw" aria-hidden="true"></i>Gerar nova escala</button>
+        <button id="btnSalvar" type="button" class="btn-secundario"><i data-lucide="save" aria-hidden="true"></i>Salvar neste dispositivo</button>
       </div>
+      <div id="status" class="status" role="status" aria-live="polite" hidden></div>
     </section>
-
-    <!-- Tabela da Escala -->
-    <section class="card">
-      <h2>Programação Gerada</h2>
+    <section class="card" aria-labelledby="resultado-title">
+      <h2 id="resultado-title">Programação gerada</h2>
+      <p id="resumo" class="summary">Nenhuma escala gerada.</p>
+      <div class="btn-group result-actions">
+        <button id="btnPdf" type="button" class="btn-terciario" disabled><i data-lucide="file-down" aria-hidden="true"></i>Baixar PDF</button>
+        <button id="btnCompartilhar" type="button" class="btn-secundario" disabled><i data-lucide="share-2" aria-hidden="true"></i>Compartilhar PDF</button>
+      </div>
       <div class="table-responsive">
         <table>
-          <thead>
-            <tr>
-              <th>Semana</th>
-              <th>Data</th>
-              <th>Dirigente (A Sentinela)</th>
-              <th>Discurso</th>
-              <th>Leitor (A Sentinela)</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaCorpo">
-            <tr><td colspan="5" style="text-align:center;">Clique em "Gerar Nova Escala"</td></tr>
-          </tbody>
+          <thead><tr><th scope="col">Semana</th><th scope="col">Data</th><th scope="col">Dirigente</th><th scope="col">Presidente</th><th scope="col">Discurso</th><th scope="col">Leitor</th></tr></thead>
+          <tbody id="tabelaCorpo"><tr><td colspan="6" class="empty-state">A escala será exibida aqui.</td></tr></tbody>
         </table>
       </div>
     </section>
   </main>
-
+  <script src="vendor/lucide.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
   <script type="module" src="src/ui/app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
-    }
-  </script>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
 </body>
 </html>

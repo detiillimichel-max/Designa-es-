@@ -1,24 +1,48 @@
-# 📋 Gerador de Escalas de Reuniões - PWA
+# Gerador de Escalas de Reuniões
 
-Aplicativo Web Progressivo (PWA) simples, rápido e 100% offline projetado para gerenciar e distribuir automaticamente designações de reuniões entre integrantes, garantindo que ninguém receba duas funções na mesma semana.
+Aplicativo Web Progressivo (PWA) offline para gerar, salvar e compartilhar escalas de reuniões. A aplicação distribui funções por rodízio, evita duas funções na mesma semana e bloqueia a geração quando as ausências tornam uma escala impossível.
 
----
+## Funcionalidades
 
-## 🛠️ Arquitetura e Competência dos Arquivos
+- Geração de 1 a 52 semanas a partir de uma data inicial.
+- Rodízio por menor número de participações e desempate aleatório.
+- Controle de ausências para dirigente, presidente, orador e leitor.
+- Validação inline de data e quantidade de semanas.
+- Persistência local no dispositivo usando IndexedDB.
+- Exportação da escala em PDF usando jsPDF distribuído localmente.
+- Compartilhamento do PDF pela Web Share API quando suportado, com fallback para download.
+- Ícones da biblioteca Lucide distribuídos localmente para manter o funcionamento offline.
+- Service worker versionado com cache dos arquivos da aplicação e das bibliotecas.
 
-O projeto segue uma estrutura **modular por responsabilidade** para garantir que alterações na interface ou no banco não quebrem a lógica do algoritmo ou o funcionamento offline:
+## Estrutura
 
 ```text
-meu-pwa-reunioes/
-├── manifest.json            # Configurações do PWA (ícone, nome, modo tela cheia)
-├── sw.js                    # Service Worker (Cache offline de todos os arquivos)
-├── index.html               # Estrutura visual e layout da aplicação
-├── README.md                # Documentação técnica do projeto
-└── src/
-    ├── data/
-    │   ├── membros.js       # Lista estática de integrantes e papéis permitidos
-    │   └── db.js            # Gerenciador de banco de dados offline (IndexedDB)
-    ├── logic/
-    │   └── geradorEscala.js # Algoritmo de distribuição sem conflitos
-    └── ui/
-        └── app.js           # Controlador da interface (conecta HTML, DB e Lógica)
+index.html
+manifest.json
+sw.js
+vendor/
+  lucide.js
+  jspdf.umd.min.js
+src/
+  data/
+    membros.js
+    db.js
+  logic/
+    geradorEscala.js
+  ui/
+    app.js
+```
+
+## Regras de segurança
+
+Uma pessoa marcada como ausente nunca é usada automaticamente como fallback. Quando não existe candidato elegível, a geração é interrompida e a tela informa a semana, o papel e a causa do bloqueio. O usuário deve ajustar as ausências ou a configuração antes de gerar novamente.
+
+## Desenvolvimento local
+
+Sirva a pasta com qualquer servidor HTTP estático, pois os módulos JavaScript e o service worker não funcionam corretamente via `file://`. Por exemplo:
+
+```bash
+npx http-server -p 4173
+```
+
+Depois, abra `http://127.0.0.1:4173/`.
