@@ -118,10 +118,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function criarPdf() {
     if (!jsPDF || !escalaAtual.length) throw new Error('Gere uma escala antes de criar o PDF.');
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }); doc.setFontSize(18); doc.text('Escala de Reuniões', 14, 16); doc.setFontSize(10); doc.text(`Início: ${inputDataInicio.value} | ${escalaAtual.length} semanas`, 14, 23);
-    const headers = ['Semana', 'Data', 'Dirigente', 'Presidente', 'Discurso', 'Leitor']; const rows = escalaAtual.map(item => [String(item.semana), item.data, item.dirigente, item.presidente, item.orador, item.leitor]); const widths = [20, 28, 55, 55, 55, 55]; let y = 32;
-    doc.setFontSize(9); doc.setFillColor(31, 95, 139); doc.setTextColor(255, 255, 255); let x = 14; headers.forEach((header, i) => { doc.rect(x, y - 6, widths[i], 9, 'F'); doc.text(header, x + 2, y); x += widths[i]; }); doc.setTextColor(31, 41, 55);
-    rows.forEach((row, rowIndex) => { y += 9; x = 14; if (rowIndex % 2 === 0) { doc.setFillColor(245, 248, 250); doc.rect(14, y - 6, widths.reduce((a, b) => a + b, 0), 9, 'F'); } row.forEach((value, i) => { doc.text(String(value).slice(0, 28), x + 2, y); x += widths[i]; }); }); doc.setFontSize(8); doc.setTextColor(100, 116, 139); doc.text('Gerado pelo app Escala de Reuniões', 14, 195); return doc;
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const margem = 12; const larguraPagina = 297; const larguraTabela = larguraPagina - (margem * 2);
+    const headers = ['Semana', 'Data', 'Dirigente', 'Presidente', 'Discurso', 'Leitor'];
+    const widths = [24, 31, 53, 53, 53, 53]; const rows = escalaAtual.map(item => [String(item.semana), item.data, item.dirigente, item.presidente, item.orador, item.leitor]);
+    const desenharCabecalho = () => { doc.setFontSize(18); doc.setTextColor(31, 41, 55); doc.text('Escala de Reuniões — Programação completa', margem, 16); doc.setFontSize(9); doc.text(`Início: ${inputDataInicio.value} | ${escalaAtual.length} semanas`, margem, 23); let x = margem; const y = 30; doc.setFillColor(31, 95, 139); doc.setDrawColor(180, 196, 209); headers.forEach((header, i) => { doc.setFillColor(31, 95, 139); doc.rect(x, y, widths[i], 11, 'FD'); doc.setTextColor(255, 255, 255); doc.setFont(undefined, 'bold'); doc.text(header, x + 2, y + 7); x += widths[i]; }); };
+    let y = 30; desenharCabecalho(); y += 11;
+    rows.forEach((row, rowIndex) => { const linhas = row.map((value, i) => doc.splitTextToSize(String(value || '—'), widths[i] - 4)); const altura = Math.max(10, ...linhas.map(texto => texto.length * 4 + 5)); if (y + altura > 190) { doc.addPage(); desenharCabecalho(); y = 41; } let x = margem; row.forEach((_, i) => { doc.setFillColor(rowIndex % 2 === 0 ? 245 : 255, rowIndex % 2 === 0 ? 248 : 255, rowIndex % 2 === 0 ? 250 : 255); doc.setDrawColor(216, 224, 232); doc.rect(x, y, widths[i], altura, 'FD'); doc.setFont(undefined, 'normal'); doc.setFontSize(8); doc.setTextColor(31, 41, 55); doc.text(linhas[i], x + 2, y + 6); x += widths[i]; }); y += altura; });
+    doc.setFontSize(8); doc.setTextColor(100, 116, 139); doc.text('Gerado pelo app Escala de Reuniões', margem, 200); return doc;
   }
   function criarPdfDiscurso(index = null) {
     if (!jsPDF || !escalaAtual.length) throw new Error('Gere uma escala antes de criar o PDF.');
