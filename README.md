@@ -56,3 +56,19 @@ Escalas gravadas em versões anteriores são migradas automaticamente para o his
 ## Informações do discurso
 
 A área de informações do discurso salva no IndexedDB local os campos de cidade, bairro, rua/estrada/avenida, congregação, tema, cântico, data, horário, observações e urgências/eventualidades. Os campos de texto têm limite de 120 caracteres, enquanto observações e urgências têm limite de 180 caracteres. O usuário deve usar “Salvar neste dispositivo” para persistir a escala e os dados preenchidos.
+
+GitHub Pages
+  └── interface do app e funcionamento offline
+
+Cloudflare Worker
+  └── API segura do mesmo app
+
+Prisma Postgres
+  └── usuários, escalas, históricos e mensagens
+
+Cloudinary / app-escala
+  └── fotos dos usuários
+
+Web Push / VAPID
+  └── notificações
+  
