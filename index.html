@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escala de Reuniões</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2b5278">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #f4f6f8; color: #333333; padding: 16px; max-width: 800px; margin: 0 auto; }
+    header { background-color: #2b5278; color: #ffffff; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+    .card { background: #ffffff; border: 1px solid #e1e4e8; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .controls { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    label { font-weight: 600; }
+    input[type="number"] { width: 70px; padding: 8px; border: 1px solid #cccccc; border-radius: 4px; font-size: 16px; }
+    button { background-color: #2b5278; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-size: 15px; font-weight: bold; cursor: pointer; }
+    button:active { background-color: #1e3a56; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #e1e4e8; padding: 10px; text-align: left; }
+    th { background-color: #f0f3f6; font-weight: 600; }
+    tr:nth-child(even) { background-color: #fafbfc; }
+    .role-tag { display: block; font-size: 12px; color: #666666; margin-bottom: 2px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Escala de Reuniões</h1>
+  </header>
+
+  <main>
+    <section class="card controls">
+      <label for="qtdSemanas">Semanas:</label>
+      <input type="number" id="qtdSemanas" value="4" min="1" max="52">
+      <button id="btnGerar">Gerar Nova Escala</button>
+    </section>
+
+    <section class="card">
+      <h2>Programação Semanal</h2>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Semana</th>
+              <th>Dirigente (A Sentinela)</th>
+              <th>Discurso</th>
+              <th>Leitor (A Sentinela)</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCorpo">
+            <tr><td colspan="4" style="text-align:center;">Clique em "Gerar Nova Escala"</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="src/ui/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>
