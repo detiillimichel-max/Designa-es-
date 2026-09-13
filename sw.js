@@ -1,9 +1,10 @@
-const CACHE_NAME = 'escala-reuniao-v1';
+const CACHE_NAME = 'escala-reuniao-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './src/data/membros.js',
+  './src/data/db.js',
   './src/logic/geradorEscala.js',
   './src/ui/app.js'
 ];
@@ -12,6 +13,18 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      );
+    })
+  );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
